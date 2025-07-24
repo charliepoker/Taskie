@@ -36,7 +36,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # Backend API (for development)
+  # Backend API
   backend:
     build:
       context: ./backend
@@ -63,7 +63,7 @@ services:
       - /app/node_modules
     command: npm run dev
 
-  # Frontend (for development)
+  # Frontend Application
   frontend:
     build:
       context: ./frontend
@@ -73,6 +73,7 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5000}
+      BACKEND_URL: http://backend:5000
     ports:
       - "3000:3000"
     depends_on:
