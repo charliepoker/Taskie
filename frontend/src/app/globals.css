@@ -1,0 +1,67 @@
+@import 'tailwindcss';
+
+:root {
+  /* TaskieTaskie Color Scheme */
+  --primary-blue: #0d65f2;
+  --secondary-pink: #fee9f0;
+  --accent-gold: #dfb032;
+  --success-green: #52c41a;
+  --error-red: #ff4d4f;
+  --warning-orange: #fa8c16;
+  --neutral-gray: #8c8c8c;
+  --background-gray: #f5f5f5;
+  --text-dark: #262626;
+  --text-light: #595959;
+
+  /* System Colors */
+  --background: #ffffff;
+  --foreground: var(--text-dark);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans, 'Inter', Arial, sans-serif);
+}
+
+/* Custom utility classes for TaskieTaskie colors */
+.bg-primary-blue {
+  background-color: var(--primary-blue);
+}
+.bg-secondary-pink {
+  background-color: var(--secondary-pink);
+}
+.bg-accent-gold {
+  background-color: var(--accent-gold);
+}
+.text-primary-blue {
+  color: var(--primary-blue);
+}
+.text-secondary-pink {
+  color: var(--secondary-pink);
+}
+.text-accent-gold {
+  color: var(--accent-gold);
+}
+.border-primary-blue {
+  border-color: var(--primary-blue);
+}
+.border-secondary-pink {
+  border-color: var(--secondary-pink);
+}
+.border-accent-gold {
+  border-color: var(--accent-gold);
+}
