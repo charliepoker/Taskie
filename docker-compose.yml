@@ -4,9 +4,9 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: taskietaskie-postgres
+    container_name: taskie-postgres
     environment:
-      POSTGRES_DB: taskietaskie
+      POSTGRES_DB: taskie
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
@@ -22,7 +22,7 @@ services:
   # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: taskietaskie-redis
+    container_name: taskie-redis
     ports:
       - "6379:6379"
     volumes:
@@ -38,13 +38,13 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: taskietaskie-backend
+    container_name: taskie-backend
     ports:
       - "5000:5000"
     environment:
       NODE_ENV: development
       PORT: 5000
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/taskietaskie
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/taskie
       REDIS_URL: redis://redis:6379
       JWT_SECRET: your-jwt-secret-key
       JWT_REFRESH_SECRET: your-jwt-refresh-secret-key
@@ -64,7 +64,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: taskietaskie-frontend
+    container_name: taskie-frontend
     ports:
       - "3000:3000"
     environment:

@@ -4,9 +4,9 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: taskietaskie-postgres-dev
+    container_name: taskie-postgres-dev
     environment:
-      POSTGRES_DB: taskietaskie_dev
+      POSTGRES_DB: taskie_dev
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
@@ -22,7 +22,7 @@ services:
   # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: taskietaskie-redis-dev
+    container_name: taskie-redis-dev
     ports:
       - "6379:6379"
     volumes:

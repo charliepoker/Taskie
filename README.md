@@ -1,4 +1,4 @@
-# TaskieTaskie
+# Taskie
 
 A modern team task management system designed to showcase DevOps practices across cloud infrastructure, containerization, CI/CD monitoring, and GitOps workflows.
 
@@ -49,8 +49,8 @@ A modern team task management system designed to showcase DevOps practices acros
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/taskietaskie.git
-cd taskietaskie
+git clone https://github.com/yourusername/taskie.git
+cd taskie
 ```
 
 2. Install dependencies:
