@@ -21,10 +21,14 @@ model User {
   avatar        String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+  ownedProjects Project[]      @relation("ProjectOwner")
   projects      ProjectMember[]
   assignedTasks Task[]         @relation("TaskAssignee")
   comments      Comment[]
 
+  @@index([email])
+  @@index([username])
+  @@index([createdAt])
   @@map("users")
 }
 
@@ -37,9 +41,12 @@ model Project {
   ownerId     String
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
+  owner       User           @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   members     ProjectMember[]
   tasks       Task[]
 
+  @@index([ownerId])
+  @@index([createdAt])
   @@map("projects")
 }
 
@@ -54,6 +61,9 @@ model ProjectMember {
   project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([userId, projectId])
+  @@index([userId])
+  @@index([projectId])
+  @@index([role])
   @@map("project_members")
 }
 
@@ -73,6 +83,12 @@ model Task {
   project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   comments    Comment[]
 
+  @@index([projectId])
+  @@index([assigneeId])
+  @@index([status])
+  @@index([priority])
+  @@index([dueDate])
+  @@index([createdAt])
   @@map("tasks")
 }
 
@@ -87,6 +103,9 @@ model Comment {
   task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
+  @@index([taskId])
+  @@index([authorId])
+  @@index([createdAt])
   @@map("comments")
 }
 
