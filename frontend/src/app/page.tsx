@@ -1,4 +1,21 @@
+'use client';
+
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import Link from 'next/link';
+
 export default function Home() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === 'loading') return; // Still loading
+
+    if (session) {
+      router.push('/dashboard');
+    }
+  }, [session, status, router]);
   return (
     <div className='min-h-screen flex flex-col'>
       {/* Header */}
@@ -8,20 +25,20 @@ export default function Home() {
           <nav>
             <ul className='flex space-x-4'>
               <li>
-                <a
-                  href='#'
+                <Link
+                  href='/auth/login'
                   className='hover:text-accent-gold transition-colors'
                 >
                   Login
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href='#'
+                <Link
+                  href='/auth/register'
                   className='hover:text-accent-gold transition-colors'
                 >
                   Register
-                </a>
+                </Link>
               </li>
             </ul>
           </nav>
@@ -39,12 +56,18 @@ export default function Home() {
             practices.
           </p>
           <div className='flex flex-col sm:flex-row gap-4 justify-center'>
-            <button className='bg-primary-blue text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors'>
+            <Link
+              href='/auth/register'
+              className='bg-primary-blue text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors inline-block text-center'
+            >
               Get Started
-            </button>
-            <button className='border border-primary-blue text-primary-blue px-6 py-3 rounded-md hover:bg-blue-50 transition-colors'>
-              Learn More
-            </button>
+            </Link>
+            <Link
+              href='/auth/login'
+              className='border border-primary-blue text-primary-blue px-6 py-3 rounded-md hover:bg-blue-50 transition-colors inline-block text-center'
+            >
+              Sign In
+            </Link>
           </div>
         </div>
       </section>

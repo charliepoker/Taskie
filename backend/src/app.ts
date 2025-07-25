@@ -3,7 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { connectDatabase } from './utils/database';
-import healthRouter from './routes/health';
+import routes from './routes';
 
 const app = express();
 
@@ -25,12 +25,16 @@ app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Health check routes
-app.use('/health', healthRouter);
+// API routes
+app.use('/api', routes);
 
-// API routes will be added here
-app.use('/api', (req, res) => {
-  res.status(404).json({ message: 'API endpoint not found' });
+// 404 handler for unknown routes
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    error: 'Route not found',
+    code: 'ROUTE_NOT_FOUND',
+  });
 });
 
 // Global error handler
