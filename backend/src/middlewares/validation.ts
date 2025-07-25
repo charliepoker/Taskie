@@ -137,6 +137,72 @@ export const validateMultiple = (
   };
 };
 
+// Flexible validation middleware that accepts an object with schemas for different targets
+export const validateRequest = (schemas: {
+  body?: z.ZodSchema<any>;
+  query?: z.ZodSchema<any>;
+  params?: z.ZodSchema<any>;
+}) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const errors: FieldError[] = [];
+
+    // Validate each target if schema is provided
+    Object.entries(schemas).forEach(([target, schema]) => {
+      if (!schema) return;
+
+      try {
+        const data =
+          target === 'body'
+            ? req.body
+            : target === 'query'
+              ? req.query
+              : req.params;
+        const validatedData = schema.parse(data);
+
+        // Replace the original data with validated data
+        if (target === 'body') {
+          req.body = validatedData;
+        } else if (target === 'query') {
+          req.query = validatedData;
+        } else if (target === 'params') {
+          req.params = validatedData;
+        }
+      } catch (error) {
+        if (error instanceof ZodError) {
+          errors.push(
+            ...error.issues.map(
+              (err): FieldError => ({
+                field: `${target}.${err.path.join('.')}`,
+                message: err.message,
+                value: (err as any).received,
+              })
+            )
+          );
+        }
+      }
+    });
+
+    if (errors.length > 0) {
+      const validationError: ValidationError = {
+        code: 'VALIDATION_ERROR',
+        message: 'Validation failed',
+        details: { targets: Object.keys(schemas) },
+        timestamp: new Date().toISOString(),
+        path: req.path,
+        fields: errors,
+      };
+
+      res.status(400).json({
+        success: false,
+        error: validationError,
+      });
+      return;
+    }
+
+    next();
+  };
+};
+
 // Response validation middleware (for validating API responses in development)
 export const validateResponse = (schema: z.ZodSchema<any>) => {
   return (req: Request, res: Response, next: NextFunction): void => {

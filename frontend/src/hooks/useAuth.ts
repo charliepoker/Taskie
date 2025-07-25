@@ -9,6 +9,8 @@ export interface AuthUser {
   firstName: string;
   lastName: string;
   avatar?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface UseAuthReturn {
