@@ -4,6 +4,7 @@ import healthRoutes from './health';
 import userRoutes from './users';
 import projectRoutes from './projects';
 import taskRoutes from './tasks';
+import analyticsRoutes from './analytics';
 
 const router = Router();
 
@@ -21,5 +22,8 @@ router.use('/projects', projectRoutes);
 
 // Task management routes
 router.use('/tasks', taskRoutes);
+
+// Analytics routes
+router.use('/analytics', analyticsRoutes);
 
 export default router;
