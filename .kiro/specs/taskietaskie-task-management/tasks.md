@@ -104,8 +104,8 @@
   - Write tests for project components and user interactions
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 6.3, 6.4_
 
-- [ ] 7. Build task management system
-- [ ] 7.1 Create task API endpoints with filtering
+- [-] 7. Build task management system
+- [x] 7.1 Create task API endpoints with filtering
 
   - Implement GET /api/tasks endpoint with advanced filtering
   - Create POST /api/tasks endpoint with project validation
@@ -116,7 +116,7 @@
   - Write comprehensive tests for task operations
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6_
 
-- [ ] 7.2 Implement task management frontend components
+- [x] 7.2 Implement task management frontend components
 
   - Create TaskList component with drag-and-drop functionality
   - Create TaskCard component with status indicators and priority colors

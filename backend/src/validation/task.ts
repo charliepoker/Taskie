@@ -13,6 +13,32 @@ const createPaginationField = (defaultValue: number, max: number = 100) =>
     )
     .refine((val: number) => Number.isInteger(val), 'Must be an integer');
 
+// Helper function for date validation with future date requirement
+const createFutureDateField = () =>
+  z
+    .union([
+      z.string().datetime('Due date must be a valid ISO datetime'),
+      z.date(),
+    ])
+    .transform((val) => {
+      if (val instanceof Date) return val;
+      return new Date(val);
+    })
+    .refine((date) => date > new Date(), 'Due date must be in the future')
+    .optional()
+    .nullable();
+
+// Helper function for date validation without future requirement
+const createDateField = () =>
+  z
+    .union([z.string().datetime('Date must be a valid ISO datetime'), z.date()])
+    .transform((val) => {
+      if (val instanceof Date) return val;
+      return new Date(val);
+    })
+    .optional()
+    .nullable();
+
 // Task Creation Schema
 export const createTaskSchema = z.object({
   title: z
@@ -34,13 +60,7 @@ export const createTaskSchema = z.object({
     .optional()
     .nullable(),
   projectId: z.string().uuid('Project ID must be a valid UUID'),
-  dueDate: z
-    .string()
-    .datetime('Due date must be a valid ISO datetime')
-    .transform((str) => new Date(str))
-    .refine((date) => date > new Date(), 'Due date must be in the future')
-    .optional()
-    .nullable(),
+  dueDate: createFutureDateField(),
 });
 
 // Task Update Schema
@@ -64,12 +84,7 @@ export const updateTaskSchema = z.object({
     .uuid('Assignee ID must be a valid UUID')
     .optional()
     .nullable(),
-  dueDate: z
-    .string()
-    .datetime('Due date must be a valid ISO datetime')
-    .transform((str) => new Date(str))
-    .optional()
-    .nullable(),
+  dueDate: createDateField(), // No future requirement for updates
 });
 
 // Task Query Parameters Schema
@@ -84,26 +99,10 @@ export const taskQuerySchema = z.object({
   assigneeId: z.string().uuid('Assignee ID must be a valid UUID').optional(),
   status: z.nativeEnum(TaskStatus).optional(),
   priority: z.nativeEnum(TaskPriority).optional(),
-  dueBefore: z
-    .string()
-    .datetime('Due before date must be a valid ISO datetime')
-    .transform((str) => new Date(str))
-    .optional(),
-  dueAfter: z
-    .string()
-    .datetime('Due after date must be a valid ISO datetime')
-    .transform((str) => new Date(str))
-    .optional(),
-  createdBefore: z
-    .string()
-    .datetime('Created before date must be a valid ISO datetime')
-    .transform((str) => new Date(str))
-    .optional(),
-  createdAfter: z
-    .string()
-    .datetime('Created after date must be a valid ISO datetime')
-    .transform((str) => new Date(str))
-    .optional(),
+  dueBefore: createDateField(),
+  dueAfter: createDateField(),
+  createdBefore: createDateField(),
+  createdAfter: createDateField(),
 });
 
 // Task ID Parameter Schema
