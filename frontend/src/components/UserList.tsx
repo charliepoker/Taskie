@@ -36,7 +36,7 @@ export function UserList({
   onUserDelete,
   showActions = true,
 }: UserListProps) {
-  const { user: currentUser } = useAuth();
+  const { currentUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -80,7 +80,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
     };
   };
 
-  const dueDateInfo = formatDueDate(task.dueDate);
+  const dueDateInfo = formatDueDate(task.dueDate || null);
 
   // Dropdown menu items
   const menuItems = [
@@ -152,12 +152,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
       {/* Tags row */}
       <div className='flex flex-wrap gap-1 mb-3'>
-        <Tag color={statusConfig.color} size='small'>
-          {statusConfig.label}
-        </Tag>
-        <Tag color={priorityConfig.color} size='small'>
-          {priorityConfig.label}
-        </Tag>
+        <Tag color={statusConfig.color}>{statusConfig.label}</Tag>
+        <Tag color={priorityConfig.color}>{priorityConfig.label}</Tag>
       </div>
 
       {/* Footer with assignee and due date */}

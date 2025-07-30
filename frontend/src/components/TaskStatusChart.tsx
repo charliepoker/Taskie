@@ -255,7 +255,7 @@ export function TaskStatusChart({
             Task Status Trends
           </AntTitle>
           <div className='h-80'>
-            <Line data={trendData} options={trendOptions} />
+            <Line data={trendData} options={trendOptions || undefined} />
           </div>
         </Card>
       )}

@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Button, Form, Input, Card, Alert, Typography } from 'antd';
+import { Button, Form, Input, Alert, Typography } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { AuthLayout } from '@/components/AuthLayout';
 
 const { Title, Text } = Typography;
 
@@ -46,91 +47,79 @@ export default function LoginPage() {
   };
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8'>
-      <div className='max-w-md w-full space-y-8'>
-        <div className='text-center'>
-          <Title level={2} className='text-primary-blue'>
-            Sign in to Taskie
-          </Title>
-          <Text className='text-gray-600'>
-            Welcome back! Please sign in to your account.
-          </Text>
-        </div>
+    <AuthLayout
+      title='Sign in to Taskie'
+      subtitle='Welcome back! Please sign in to your account.'
+    >
+      {error && (
+        <Alert
+          message={error}
+          type='error'
+          showIcon
+          className='mb-4'
+          closable
+          onClose={() => setError(null)}
+        />
+      )}
 
-        <Card className='shadow-lg'>
-          {error && (
-            <Alert
-              message={error}
-              type='error'
-              showIcon
-              className='mb-4'
-              closable
-              onClose={() => setError(null)}
-            />
-          )}
+      <Form
+        name='login'
+        onFinish={onFinish}
+        layout='vertical'
+        size='large'
+        autoComplete='off'
+      >
+        <Form.Item
+          name='email'
+          label='Email'
+          rules={[
+            { required: true, message: 'Please input your email!' },
+            { type: 'email', message: 'Please enter a valid email!' },
+          ]}
+        >
+          <Input
+            prefix={<UserOutlined className='text-gray-400' />}
+            placeholder='Enter your email'
+            autoComplete='email'
+          />
+        </Form.Item>
 
-          <Form
-            name='login'
-            onFinish={onFinish}
-            layout='vertical'
+        <Form.Item
+          name='password'
+          label='Password'
+          rules={[{ required: true, message: 'Please input your password!' }]}
+        >
+          <Input.Password
+            prefix={<LockOutlined className='text-gray-400' />}
+            placeholder='Enter your password'
+            autoComplete='current-password'
+          />
+        </Form.Item>
+
+        <Form.Item>
+          <Button
+            type='primary'
+            htmlType='submit'
+            loading={loading}
+            className='w-full bg-primary-blue hover:bg-blue-700'
             size='large'
-            autoComplete='off'
           >
-            <Form.Item
-              name='email'
-              label='Email'
-              rules={[
-                { required: true, message: 'Please input your email!' },
-                { type: 'email', message: 'Please enter a valid email!' },
-              ]}
-            >
-              <Input
-                prefix={<UserOutlined className='text-gray-400' />}
-                placeholder='Enter your email'
-                autoComplete='email'
-              />
-            </Form.Item>
+            {loading ? 'Signing in...' : 'Sign in'}
+          </Button>
+        </Form.Item>
+      </Form>
 
-            <Form.Item
-              name='password'
-              label='Password'
-              rules={[
-                { required: true, message: 'Please input your password!' },
-              ]}
-            >
-              <Input.Password
-                prefix={<LockOutlined className='text-gray-400' />}
-                placeholder='Enter your password'
-                autoComplete='current-password'
-              />
-            </Form.Item>
-
-            <Form.Item>
-              <Button
-                type='primary'
-                htmlType='submit'
-                loading={loading}
-                className='w-full bg-primary-blue hover:bg-blue-700'
-                size='large'
-              >
-                {loading ? 'Signing in...' : 'Sign in'}
-              </Button>
-            </Form.Item>
-          </Form>
-
-          <div className='text-center'>
-            <Text className='text-gray-600'>
-              Don&apos;t have an account?{' '}
-              <Link
-                href='/auth/register'
-                className='text-primary-blue hover:text-blue-700'
-              >
-                Sign up here
-              </Link>
-            </Text>
-          </div>
-        </Card>
+      <div className='text-center mt-6'>
+        <Text className='text-gray-600'>
+          Don&apos;t have an account?{' '}
+          <Link
+            href='/auth/register'
+            className='text-primary-blue hover:text-blue-700'
+          >
+            Sign up here
+          </Link>
+        </Text>
       </div>
-    </div>
+    </AuthLayout>
   );
 }

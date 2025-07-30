@@ -164,7 +164,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
               onChange={val => setDescription(val || '')}
               preview='edit'
               height={200}
-              visibleDragBar={false}
+              visibleDragbar={false}
               textareaProps={{
                 placeholder: 'Enter task description...',
                 style: { fontSize: 14 },
@@ -224,7 +224,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
               allowClear
               showSearch
               filterOption={(input, option) =>
-                (option?.children as string)
+                (option?.label as string)
                   ?.toLowerCase()
                   .includes(input.toLowerCase())
               }

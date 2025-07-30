@@ -58,10 +58,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    command: npm run dev
 
   # Frontend Application
   frontend:
@@ -71,18 +67,16 @@ services:
     container_name: taskie-frontend
     restart: unless-stopped
     environment:
-      NODE_ENV: ${NODE_ENV:-development}
+      NODE_ENV: ${NODE_ENV:-production}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5000}
       BACKEND_URL: http://backend:5000
+      NEXTAUTH_SECRET: ${JWT_SECRET}
+      NEXTAUTH_URL: ${FRONTEND_URL:-http://localhost:3000}
+      AUTH_TRUST_HOST: "true"
     ports:
       - "3000:3000"
     depends_on:
       - backend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
-    command: npm run dev
 
 volumes:
   postgres_data:

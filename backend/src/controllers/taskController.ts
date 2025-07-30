@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { TaskService } from '../services/taskService';
 import { AuthRequest } from '../types';
+import { CacheManager } from '../middlewares/cache';
 import {
   createTaskSchema,
   updateTaskSchema,
@@ -79,6 +80,10 @@ export class TaskController {
 
       // Create task
       const task = await taskService.createTask(validatedData, req.user.id);
+
+      // Invalidate related cache
+      await CacheManager.invalidateTaskCache();
+      await CacheManager.invalidateProjectCache(validatedData.projectId);
 
       res.status(201).json({
         success: true,
@@ -176,6 +181,10 @@ export class TaskController {
       // Update task
       const task = await taskService.updateTask(id, validatedData, req.user.id);
 
+      // Invalidate related cache
+      await CacheManager.invalidateTaskCache(id);
+      await CacheManager.invalidateProjectCache(task.projectId);
+
       res.status(200).json({
         success: true,
         message: 'Task updated successfully',
@@ -226,8 +235,17 @@ export class TaskController {
       // Validate task ID
       const { id } = taskIdSchema.parse(req.params);
 
+      // Get task first to get project ID for cache invalidation
+      const existingTask = await taskService.getTaskById(id, req.user.id);
+
       // Delete task
       await taskService.deleteTask(id, req.user.id);
+
+      // Invalidate related cache
+      if (existingTask) {
+        await CacheManager.invalidateTaskCache(id);
+        await CacheManager.invalidateProjectCache(existingTask.projectId);
+      }
 
       res.status(200).json({
         success: true,
@@ -290,6 +308,9 @@ export class TaskController {
         taskId: validatedData.taskId,
         authorId: req.user.id,
       });
+
+      // Invalidate task cache since comments are included
+      await CacheManager.invalidateTaskCache(validatedData.taskId);
 
       res.status(201).json({
         success: true,

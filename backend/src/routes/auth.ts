@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { AuthController } from '../controllers/authController';
 import { authenticateToken } from '../middlewares/auth';
 import { validateBody } from '../middlewares/validation';
+import { authRateLimit, strictRateLimit } from '../middlewares/security';
 import {
   registerSchema,
   loginSchema,
@@ -13,21 +14,24 @@ import {
 const router = Router();
 const authController = new AuthController();
 
-// Public routes
+// Public routes with strict rate limiting
 router.post(
   '/register',
+  authRateLimit,
   validateBody(registerSchema),
   authController.register.bind(authController)
 );
 
 router.post(
   '/login',
+  authRateLimit,
   validateBody(loginSchema),
   authController.login.bind(authController)
 );
 
 router.post(
   '/refresh-token',
+  strictRateLimit,
   validateBody(refreshTokenSchema),
   authController.refreshToken.bind(authController)
 );
@@ -49,6 +53,7 @@ router.put(
 router.put(
   '/change-password',
   authenticateToken,
+  strictRateLimit,
   validateBody(changePasswordSchema),
   authController.changePassword.bind(authController)
 );
@@ -62,6 +67,7 @@ router.post(
 router.delete(
   '/account',
   authenticateToken,
+  strictRateLimit,
   authController.deleteAccount.bind(authController)
 );
 

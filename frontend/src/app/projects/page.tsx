@@ -7,9 +7,12 @@ import { ProjectForm } from '../../components/ProjectForm';
 import { ProjectDetails } from '../../components/ProjectDetails';
 import { Project } from '../../services/projectService';
 import { useAuth } from '../../hooks/useAuth';
+import { DashboardLayout } from '@/components/DashboardLayout';
+import { BreadcrumbNavigation } from '@/components/BreadcrumbNavigation';
+import { RouteWrapper } from '@/components/RouteWrapper';
 
 export default function ProjectsPage() {
-  const { user } = useAuth();
+  const { currentUser: user } = useAuth();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -69,42 +72,50 @@ export default function ProjectsPage() {
 
   if (showProjectDetails && selectedProject) {
     return (
-      <ProjectDetails
-        projectId={selectedProject.id}
-        currentUserId={user?.id}
-        onBack={handleBackFromDetails}
-        onEdit={handleEditProject}
-      />
+      <RouteWrapper>
+        <DashboardLayout>
+          <ProjectDetails
+            projectId={selectedProject.id}
+            currentUserId={user?.id}
+            onBack={handleBackFromDetails}
+            onEdit={handleEditProject}
+          />
+        </DashboardLayout>
+      </RouteWrapper>
     );
   }
 
   return (
-    <div className='p-6'>
-      <ProjectList
-        key={projectListKey}
-        currentUserId={user?.id}
-        onCreateProject={handleCreateProject}
-        onEditProject={handleEditProject}
-        onDeleteProject={handleDeleteProject}
-        onManageMembers={handleManageMembers}
-        onProjectClick={handleProjectClick}
-      />
+    <RouteWrapper>
+      <DashboardLayout>
+        <BreadcrumbNavigation />
 
-      {/* Create Project Modal */}
-      <ProjectForm
-        visible={showCreateForm}
-        project={null}
-        onCancel={() => setShowCreateForm(false)}
-        onSuccess={handleFormSuccess}
-      />
+        <ProjectList
+          key={projectListKey}
+          currentUserId={user?.id}
+          onCreateProject={handleCreateProject}
+          onEditProject={handleEditProject}
+          onDeleteProject={handleDeleteProject}
+          onManageMembers={handleManageMembers}
+          onProjectClick={handleProjectClick}
+        />
 
-      {/* Edit Project Modal */}
-      <ProjectForm
-        visible={showEditForm}
-        project={selectedProject}
-        onCancel={() => setShowEditForm(false)}
-        onSuccess={handleFormSuccess}
-      />
-    </div>
+        {/* Create Project Modal */}
+        <ProjectForm
+          visible={showCreateForm}
+          project={null}
+          onCancel={() => setShowCreateForm(false)}
+          onSuccess={handleFormSuccess}
+        />
+
+        {/* Edit Project Modal */}
+        <ProjectForm
+          visible={showEditForm}
+          project={selectedProject}
+          onCancel={() => setShowEditForm(false)}
+          onSuccess={handleFormSuccess}
+        />
+      </DashboardLayout>
+    </RouteWrapper>
   );
 }

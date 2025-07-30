@@ -26,7 +26,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { taskService } from '../services/taskService';
 import {
   Task,
-  TaskFilters,
+  TaskFilters as TaskFiltersType,
   TaskQueryParams,
   CreateTaskInput,
   UpdateTaskInput,
@@ -55,7 +55,7 @@ const TaskList: React.FC<TaskListProps> = ({
   showCreateButton = true,
   pageSize = 20,
 }) => {
-  const [filters, setFilters] = useState<TaskFilters>({
+  const [filters, setFilters] = useState<TaskFiltersType>({
     ...(projectId && { projectId }),
   });
   const [currentPage, setCurrentPage] = useState(1);
@@ -122,7 +122,7 @@ const TaskList: React.FC<TaskListProps> = ({
   });
 
   // Handle filter changes
-  const handleFiltersChange = (newFilters: TaskFilters) => {
+  const handleFiltersChange = (newFilters: TaskFiltersType) => {
     setFilters(newFilters);
     setCurrentPage(1);
   };

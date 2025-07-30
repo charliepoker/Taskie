@@ -10,7 +10,8 @@ import {
   CreateCommentInput,
 } from '../types/task';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 // Create axios instance with interceptors
 const api = axios.create({

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 // Types for analytics data
 export interface DashboardMetrics {
@@ -90,12 +90,22 @@ export interface AnalyticsResponse<T> {
 }
 
 class AnalyticsService {
-  private getAuthHeaders() {
-    const token = localStorage.getItem('accessToken');
-    return {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    };
+  private async getAuthHeaders() {
+    try {
+      const { getSession } = await import('next-auth/react');
+      const session = await getSession();
+      return {
+        Authorization: session?.accessToken
+          ? `Bearer ${session.accessToken}`
+          : '',
+        'Content-Type': 'application/json',
+      };
+    } catch (error) {
+      console.error('Failed to get session token:', error);
+      return {
+        'Content-Type': 'application/json',
+      };
+    }
   }
 
   /**
@@ -116,7 +126,7 @@ class AnalyticsService {
       const response = await axios.get<AnalyticsResponse<DashboardMetrics>>(
         `${API_BASE_URL}/analytics/dashboard?${params.toString()}`,
         {
-          headers: this.getAuthHeaders(),
+          headers: await this.getAuthHeaders(),
         }
       );
 
@@ -149,7 +159,7 @@ class AnalyticsService {
       const response = await axios.get<
         AnalyticsResponse<TasksByStatusResponse>
       >(`${API_BASE_URL}/analytics/tasks-by-status?${params.toString()}`, {
-        headers: this.getAuthHeaders(),
+        headers: await this.getAuthHeaders(),
       });
 
       if (!response.data.success) {
@@ -181,7 +191,7 @@ class AnalyticsService {
       const response = await axios.get<
         AnalyticsResponse<UserProductivityResponse>
       >(`${API_BASE_URL}/analytics/user-productivity?${params.toString()}`, {
-        headers: this.getAuthHeaders(),
+        headers: await this.getAuthHeaders(),
       });
 
       if (!response.data.success) {
@@ -201,7 +211,7 @@ class AnalyticsService {
   async clearCache(): Promise<void> {
     try {
       await axios.delete(`${API_BASE_URL}/analytics/cache`, {
-        headers: this.getAuthHeaders(),
+        headers: await this.getAuthHeaders(),
       });
     } catch (error) {
       console.error('Error clearing analytics cache:', error);
