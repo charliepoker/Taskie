@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { ProjectController } from '../controllers/projectController';
 import { authenticateToken } from '../middlewares/auth';
 import { validateRequest } from '../middlewares/validation';
+import { strictRateLimit } from '../middlewares/security';
 import {
   createProjectSchema,
   updateProjectSchema,
@@ -49,6 +50,7 @@ router.put(
 
 router.delete(
   '/:id',
+  strictRateLimit,
   validateRequest({ params: projectIdSchema }),
   projectController.deleteProject.bind(projectController)
 );
@@ -76,6 +78,7 @@ router.put(
 
 router.delete(
   '/:projectId/members/:userId',
+  strictRateLimit,
   validateRequest({ params: projectMemberIdSchema }),
   projectController.removeProjectMember.bind(projectController)
 );

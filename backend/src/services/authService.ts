@@ -1,9 +1,8 @@
-import { PrismaClient, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import { hashPassword, comparePassword } from '../utils/password';
 import { generateTokens, verifyRefreshToken } from '../utils/jwt';
 import { LoginCredentials, RegisterData, TokenPair } from '../types';
-
-const prisma = new PrismaClient();
+import { prisma } from '../utils/database';
 
 export class AuthService {
   /**

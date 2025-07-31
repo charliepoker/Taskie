@@ -13,8 +13,11 @@ interface ExtendedUser {
   refreshToken: string;
 }
 
+// Use internal Docker network for server-side requests
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+  typeof window === 'undefined'
+    ? 'http://backend:5000/api' // Server-side: use internal Docker network
+    : 'http://localhost:5000/api'; // Client-side: use localhost
 
 async function refreshAccessToken(token: JWT) {
   try {

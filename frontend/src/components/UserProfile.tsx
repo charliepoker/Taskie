@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Card,
   Avatar,
@@ -45,7 +45,7 @@ export function UserProfile({
   onUserUpdate,
   onUserDelete,
 }: UserProfileProps) {
-  const { user: currentUser } = useAuth();
+  const { currentUser } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -57,7 +57,7 @@ export function UserProfile({
   const targetUserId = userId || currentUser?.id;
   const isCurrentUser = currentUser?.id === targetUserId;
 
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     if (!targetUserId) return;
 
     try {
@@ -88,11 +88,11 @@ export function UserProfile({
     } finally {
       setLoading(false);
     }
-  };
+  }, [targetUserId, form]);
 
   useEffect(() => {
     fetchUser();
-  }, [targetUserId]);
+  }, [fetchUser]);
 
   const handleEdit = () => {
     setEditing(true);

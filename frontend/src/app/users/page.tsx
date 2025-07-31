@@ -5,8 +5,9 @@ import { Modal, message } from 'antd';
 import { UserList } from '@/components/UserList';
 import { UserProfile } from '@/components/UserProfile';
 import { User } from '@/services/userService';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { DashboardLayout } from '@/components/DashboardLayout';
+import { BreadcrumbNavigation } from '@/components/BreadcrumbNavigation';
+import { RouteWrapper } from '@/components/RouteWrapper';
 
 export default function UsersPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -51,53 +52,53 @@ export default function UsersPage() {
   };
 
   return (
-    <ProtectedRoute>
+    <RouteWrapper>
       <DashboardLayout>
-        <div className='p-8'>
-          <UserList
-            onUserSelect={handleUserSelect}
-            onUserEdit={handleUserEdit}
-            onUserDelete={handleUserDelete}
-            showActions={true}
-          />
+        <BreadcrumbNavigation />
 
-          {/* User Profile Modal */}
-          <Modal
-            title='User Profile'
-            open={profileModalVisible}
-            onCancel={closeModals}
-            footer={null}
-            width={800}
-            destroyOnClose
-          >
-            {selectedUser && (
-              <UserProfile
-                userId={selectedUser.id}
-                onUserUpdate={handleUserUpdate}
-                onUserDelete={handleUserDeleted}
-              />
-            )}
-          </Modal>
+        <UserList
+          onUserSelect={handleUserSelect}
+          onUserEdit={handleUserEdit}
+          onUserDelete={handleUserDelete}
+          showActions={true}
+        />
 
-          {/* Edit Profile Modal */}
-          <Modal
-            title='Edit Profile'
-            open={editModalVisible}
-            onCancel={closeModals}
-            footer={null}
-            width={600}
-            destroyOnClose
-          >
-            {selectedUser && (
-              <UserProfile
-                userId={selectedUser.id}
-                onUserUpdate={handleUserUpdate}
-                onUserDelete={handleUserDeleted}
-              />
-            )}
-          </Modal>
-        </div>
+        {/* User Profile Modal */}
+        <Modal
+          title='User Profile'
+          open={profileModalVisible}
+          onCancel={closeModals}
+          footer={null}
+          width={800}
+          destroyOnClose
+        >
+          {selectedUser && (
+            <UserProfile
+              userId={selectedUser.id}
+              onUserUpdate={handleUserUpdate}
+              onUserDelete={handleUserDeleted}
+            />
+          )}
+        </Modal>
+
+        {/* Edit Profile Modal */}
+        <Modal
+          title='Edit Profile'
+          open={editModalVisible}
+          onCancel={closeModals}
+          footer={null}
+          width={600}
+          destroyOnClose
+        >
+          {selectedUser && (
+            <UserProfile
+              userId={selectedUser.id}
+              onUserUpdate={handleUserUpdate}
+              onUserDelete={handleUserDeleted}
+            />
+          )}
+        </Modal>
       </DashboardLayout>
-    </ProtectedRoute>
+    </RouteWrapper>
   );
 }

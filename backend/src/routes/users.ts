@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { UserController } from '../controllers/userController';
 import { authenticateToken } from '../middlewares/auth';
 import { validateBody, validateParams } from '../middlewares/validation';
+import { strictRateLimit } from '../middlewares/security';
 import { updateUserSchema, userIdParamSchema } from '../validation/user';
 
 const router = Router();
@@ -31,6 +32,7 @@ router.put(
 // DELETE /api/users/:id - Delete user account
 router.delete(
   '/:id',
+  strictRateLimit,
   validateParams(userIdParamSchema),
   userController.deleteUser.bind(userController)
 );

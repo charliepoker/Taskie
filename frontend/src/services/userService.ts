@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 // Types
 export interface User {
@@ -72,11 +72,17 @@ const apiClient = axios.create({
 });
 
 // Add auth token to requests
-apiClient.interceptors.request.use(config => {
+apiClient.interceptors.request.use(async config => {
   if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Try to get token from NextAuth session
+    try {
+      const { getSession } = await import('next-auth/react');
+      const session = await getSession();
+      if (session?.accessToken) {
+        config.headers.Authorization = `Bearer ${session.accessToken}`;
+      }
+    } catch (error) {
+      console.error('Failed to get session token:', error);
     }
   }
   return config;

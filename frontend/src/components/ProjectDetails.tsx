@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Card,
   Tabs,
@@ -46,7 +46,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
 
-  const fetchProject = async () => {
+  const fetchProject = useCallback(async () => {
     setLoading(true);
     try {
       const response = await ProjectService.getProjectById(projectId);
@@ -56,13 +56,13 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId]);
 
   useEffect(() => {
     if (projectId) {
       fetchProject();
     }
-  }, [projectId]);
+  }, [projectId, fetchProject]);
 
   if (loading) {
     return (

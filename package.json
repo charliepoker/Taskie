@@ -23,6 +23,10 @@
     "test:frontend": "cd frontend && npm run test",
     "test:backend": "cd backend && npm run test",
     "test": "npm run test:backend && npm run test:frontend",
+    "test:coverage": "npm run test:backend -- --coverage && npm run test:frontend -- --coverage",
+    "test:ci": "npm run test:backend -- --ci && npm run test:frontend -- --ci",
+    "test:db:setup": "cd backend && npm run test:db:setup",
+    "test:db:teardown": "cd backend && npm run test:db:teardown",
     "prisma:generate": "cd backend && npm run prisma:generate",
     "prisma:migrate": "cd backend && npm run prisma:migrate",
     "prisma:studio": "cd backend && npm run prisma:studio",
@@ -43,11 +47,13 @@
   "lint-staged": {
     "frontend/**/*.{js,jsx,ts,tsx}": [
       "cd frontend && npm run lint:fix",
-      "cd frontend && npm run format"
+      "cd frontend && npm run format",
+      "cd frontend && npm run test -- --bail --findRelatedTests --passWithNoTests"
     ],
     "backend/**/*.{js,ts}": [
       "cd backend && npm run lint:fix",
-      "cd backend && npm run format"
+      "cd backend && npm run format",
+      "cd backend && npm run test -- --bail --findRelatedTests --passWithNoTests"
     ]
   },
   "devDependencies": {

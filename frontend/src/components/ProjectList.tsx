@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Row,
   Col,
@@ -58,26 +58,29 @@ export const ProjectList: React.FC<ProjectListProps> = ({
     limit: 12,
   });
 
-  const fetchProjects = async (params: GetProjectsParams = filters) => {
-    setLoading(true);
-    try {
-      const response = await ProjectService.getProjects(params);
-      setProjects(response.data);
-      setPagination({
-        current: response.meta.page,
-        pageSize: response.meta.limit,
-        total: response.meta.total,
-      });
-    } catch (error: any) {
-      message.error(error.error || 'Failed to fetch projects');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchProjects = useCallback(
+    async (params: GetProjectsParams = filters) => {
+      setLoading(true);
+      try {
+        const response = await ProjectService.getProjects(params);
+        setProjects(response.data);
+        setPagination({
+          current: response.meta.page,
+          pageSize: response.meta.limit,
+          total: response.meta.total,
+        });
+      } catch (error: any) {
+        message.error(error.error || 'Failed to fetch projects');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [filters]
+  );
 
   useEffect(() => {
     fetchProjects();
-  }, []);
+  }, [fetchProjects]);
 
   const handleSearch = (value: string) => {
     const newFilters = {
