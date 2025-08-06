@@ -26,9 +26,10 @@ terraform.rc
 *~
 
 # Kiro IDE (keep specs but ignore settings)
-.kiro/settings/
-.kiro/steering/
-.kiro/hooks/
+.kiro
+# .kiro/settings/
+# .kiro/steering/
+# .kiro/hooks/
 
 # Husky Git Hooks
 .husky/
