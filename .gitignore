@@ -25,6 +25,14 @@ terraform.rc
 *.swo
 *~
 
+# Kiro IDE (keep specs but ignore settings)
+.kiro/settings/
+.kiro/steering/
+.kiro/hooks/
+
+# Husky Git Hooks
+.husky/
+
 # OS
 .DS_Store
 Thumbs.db
