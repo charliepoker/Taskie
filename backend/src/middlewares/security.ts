@@ -36,6 +36,14 @@ export const createRateLimit = (options: {
   message?: string;
   skipSuccessfulRequests?: boolean;
 }) => {
+  // If rate limiting is disabled (e.g., in test environment), return a no-op middleware
+  // This allows tests to run without being blocked by rate limits
+  if (securityConfig.disableRateLimit) {
+    return (req: Request, res: Response, next: NextFunction) => {
+      next();
+    };
+  }
+
   return rateLimit({
     windowMs: options.windowMs,
     max: options.max,

@@ -1,15 +1,21 @@
 # Bootstrap infrastructure for Terraform state management
 # This creates the S3 bucket and DynamoDB table needed for remote state
 
+# Local values for consistent tagging
+locals {
+  common_tags = merge(var.tags, {
+    Name        = "Terraform State Bucket"
+    Purpose     = "terraform-state"
+    ManagedBy   = "terraform"
+    CreatedDate = formatdate("YYYY-MM-DD", timestamp())
+  })
+}
+
 # S3 bucket for Terraform state storage
 resource "aws_s3_bucket" "terraform_state" {
   bucket = var.state_bucket_name
 
-  tags = {
-    Name        = "Terraform State Bucket"
-    Environment = "bootstrap"
-    Purpose     = "terraform-state"
-  }
+  tags = local.common_tags
 }
 
 # S3 bucket versioning
@@ -52,11 +58,10 @@ resource "aws_dynamodb_table" "terraform_locks" {
     type = "S"
   }
 
-  tags = {
-    Name        = "Terraform State Lock Table"
-    Environment = "bootstrap"
-    Purpose     = "terraform-state-locking"
-  }
+  tags = merge(local.common_tags, {
+    Name    = "Terraform State Lock Table"
+    Purpose = "terraform-state-locking"
+  })
 }
 
 # IAM policy for Terraform state access
@@ -96,9 +101,8 @@ resource "aws_iam_policy" "terraform_state_policy" {
     ]
   })
 
-  tags = {
-    Name        = "Terraform State Policy"
-    Environment = "bootstrap"
-    Purpose     = "terraform-state-access"
-  }
+  tags = merge(local.common_tags, {
+    Name    = "Terraform State Policy"
+    Purpose = "terraform-state-access"
+  })
 }

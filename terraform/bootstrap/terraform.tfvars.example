@@ -13,9 +13,12 @@ iam_policy_name = "TerraformStatePolicy"
 # AWS region for bootstrap resources
 aws_region = "us-east-1"
 
-# Additional tags for all resources
+# Additional tags for all resources (comprehensive tagging strategy)
 tags = {
-  Owner       = "your-name"
-  Environment = "bootstrap"
   Project     = "taskie"
+  Environment = "bootstrap"
+  Owner       = "your-name"
+  Department  = "devops"
+  Backup      = "required"
+  Monitoring  = "enabled"
 }

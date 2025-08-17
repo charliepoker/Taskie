@@ -326,6 +326,9 @@ resource "aws_autoscaling_group" "frontend" {
   max_size         = var.frontend_max_size
   desired_capacity = var.frontend_desired_capacity
 
+  # Enable capacity rebalancing for better AZ distribution
+  capacity_rebalance = true
+
   launch_template {
     id      = aws_launch_template.frontend.id
     version = "$Latest"
@@ -379,6 +382,9 @@ resource "aws_autoscaling_group" "backend" {
   min_size         = var.backend_min_size
   max_size         = var.backend_max_size
   desired_capacity = var.backend_desired_capacity
+
+  # Enable capacity rebalancing for better AZ distribution
+  capacity_rebalance = true
 
   launch_template {
     id      = aws_launch_template.backend.id

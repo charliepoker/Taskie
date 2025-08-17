@@ -59,9 +59,21 @@ variable "aws_region" {
 }
 
 variable "tags" {
-  description = "Additional tags to apply to all resources"
+  description = "Additional tags to apply to all resources. Recommended tags: Project, Environment, Owner, CostCenter, Department, Backup, Monitoring"
   type        = map(string)
   default     = {}
+
+  validation {
+    condition     = length(var.tags) <= 50
+    error_message = "Cannot specify more than 50 tags (AWS limit)."
+  }
+
+  validation {
+    condition = alltrue([
+      for key, value in var.tags : length(key) <= 128 && length(value) <= 256
+    ])
+    error_message = "Tag keys must be 128 characters or less, and values must be 256 characters or less."
+  }
 }
 
 
