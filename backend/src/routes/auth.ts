@@ -30,7 +30,7 @@ router.post(
 );
 
 router.post(
-  '/refresh-token',
+  '/refresh',
   strictRateLimit,
   validateBody(refreshTokenSchema),
   authController.refreshToken.bind(authController)
@@ -50,7 +50,7 @@ router.put(
   authController.updateProfile.bind(authController)
 );
 
-router.put(
+router.post(
   '/change-password',
   authenticateToken,
   strictRateLimit,

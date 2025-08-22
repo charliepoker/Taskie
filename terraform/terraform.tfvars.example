@@ -1,0 +1,44 @@
+# Example Terraform Variables Configuration
+# Copy this file to terraform.tfvars and customize the values
+
+# General Configuration
+aws_region   = "us-east-1"
+project_name = "taskie"
+environment  = "dev"
+
+# Network Configuration
+vpc_cidr                 = "10.0.0.0/16"
+public_subnet_cidrs      = ["10.0.1.0/24", "10.0.2.0/24"]
+private_subnet_cidrs     = ["10.0.3.0/24", "10.0.4.0/24"]
+database_subnet_cidrs    = ["10.0.5.0/24", "10.0.6.0/24"]
+
+# Feature Flags
+enable_nat_gateway = true
+enable_flow_logs   = true
+enable_waf         = false
+enable_https       = false
+
+# SSL Configuration (uncomment and set if enable_https = true)
+# certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012"
+
+# Instance Configuration
+# key_name = "my-key-pair"  # Uncomment and set your key pair name
+frontend_instance_type = "t3.micro"
+backend_instance_type  = "t3.small"
+
+# Auto Scaling Configuration
+frontend_min_size         = 1
+frontend_max_size         = 3
+frontend_desired_capacity = 2
+
+backend_min_size         = 1
+backend_max_size         = 5
+backend_desired_capacity = 2
+
+# Database Configuration (set these when you have actual database endpoints)
+# database_url = "postgresql://user:password@hostname:5432/database"
+# redis_url    = "redis://hostname:6379"
+
+# Monitoring Configuration
+enable_detailed_monitoring = false
+enable_asg_metrics        = true

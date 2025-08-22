@@ -1,16 +1,80 @@
-import { createClient } from 'redis';
+import { RedisClientType } from 'redis';
 import { performance } from 'perf_hooks';
+import { getRedisClient, handleRedisError } from '../utils/database';
 
-// Redis client for storing metrics
-const redis = createClient({
-  url: process.env.REDIS_URL || 'redis://localhost:6379',
-});
+// Redis client wrapper for performance monitoring
+class RedisClientWrapper {
+  private client: RedisClientType | null = null;
+  private isConnected = false;
 
-redis.on('error', (err) => {
-  console.error('Redis Client Error:', err);
-});
+  async getClient(): Promise<RedisClientType | null> {
+    if (!this.client && !this.isConnected) {
+      try {
+        this.client = await getRedisClient();
+        this.isConnected = true;
+        return this.client;
+      } catch (error) {
+        console.warn('Redis not available for performance monitoring:', error);
+        this.isConnected = false;
+        return null;
+      }
+    }
+    return this.client;
+  }
 
-redis.connect().catch(console.error);
+  async zadd(key: string, score: number, member: string): Promise<number> {
+    try {
+      const client = await this.getClient();
+      if (!client) return 0;
+      return await client.zAdd(key, { score, value: member });
+    } catch (error) {
+      console.warn('Redis ZADD failed:', error);
+      return 0;
+    }
+  }
+
+  async zrangebyscore(
+    key: string,
+    min: number,
+    max: number
+  ): Promise<string[]> {
+    try {
+      const client = await this.getClient();
+      if (!client) return [];
+      return await client.zRangeByScore(key, min, max);
+    } catch (error) {
+      console.warn('Redis ZRANGEBYSCORE failed:', error);
+      return [];
+    }
+  }
+
+  async expire(key: string, seconds: number): Promise<boolean> {
+    try {
+      const client = await this.getClient();
+      if (!client) return false;
+      const result = await client.expire(key, seconds);
+      return result === 1;
+    } catch (error) {
+      console.warn('Redis EXPIRE failed:', error);
+      return false;
+    }
+  }
+
+  async disconnect(): Promise<void> {
+    try {
+      if (this.client) {
+        // Note: We don't disconnect the shared Redis client here
+        // as it's managed by the database utility
+        this.client = null;
+        this.isConnected = false;
+      }
+    } catch (error) {
+      console.warn('Redis disconnect failed:', error);
+    }
+  }
+}
+
+const redis = new RedisClientWrapper();
 
 export interface PerformanceMetric {
   name: string;
@@ -34,6 +98,7 @@ export class PerformanceMonitoringService {
   private alertRules: AlertRule[] = [];
   private alertStates: Map<string, { triggered: boolean; since: number }> =
     new Map();
+  private metricsCollectionInterval: NodeJS.Timeout | null = null;
 
   static getInstance(): PerformanceMonitoringService {
     if (!PerformanceMonitoringService.instance) {
@@ -45,7 +110,11 @@ export class PerformanceMonitoringService {
 
   constructor() {
     this.initializeDefaultAlerts();
-    this.startMetricsCollection();
+
+    // Only start metrics collection if not in test environment
+    if (process.env.NODE_ENV !== 'test') {
+      this.startMetricsCollection();
+    }
   }
 
   /**
@@ -66,12 +135,15 @@ export class PerformanceMonitoringService {
         metricArray.shift();
       }
 
-      // Store in Redis for persistence
-      const key = `metrics:${metric.name}`;
-      await redis.zadd(key, metric.timestamp, JSON.stringify(metric));
-
-      // Set expiration to 24 hours
-      await redis.expire(key, 86400);
+      // Store in Redis for persistence (gracefully handle Redis unavailability)
+      try {
+        const key = `metrics:${metric.name}`;
+        await redis.zadd(key, metric.timestamp, JSON.stringify(metric));
+        await redis.expire(key, 86400); // Set expiration to 24 hours
+      } catch (redisError) {
+        // Log Redis error but don't fail the entire operation
+        console.warn('Failed to store metric in Redis:', redisError);
+      }
 
       // Check alert rules
       this.checkAlerts(metric);
@@ -190,10 +262,26 @@ export class PerformanceMonitoringService {
 
       return results
         .filter((result): result is string => typeof result === 'string')
-        .map((result) => JSON.parse(result));
+        .map((result) => {
+          try {
+            return JSON.parse(result);
+          } catch (parseError) {
+            console.warn('Failed to parse metric data:', parseError);
+            return null;
+          }
+        })
+        .filter((metric): metric is PerformanceMetric => metric !== null);
     } catch (error) {
-      console.error('Error getting metrics:', error);
-      return [];
+      console.warn(
+        'Error getting metrics from Redis, falling back to memory:',
+        error
+      );
+
+      // Fallback to in-memory metrics if Redis fails
+      const memoryMetrics = this.metrics.get(metricName) || [];
+      return memoryMetrics.filter(
+        (metric) => metric.timestamp >= startTime && metric.timestamp <= endTime
+      );
     }
   }
 
@@ -344,9 +432,13 @@ export class PerformanceMonitoringService {
    */
   private startMetricsCollection(): void {
     // Collect system metrics every 30 seconds
-    setInterval(async () => {
-      await this.recordMemoryUsage();
-      await this.recordCpuUsage();
+    this.metricsCollectionInterval = setInterval(async () => {
+      try {
+        await this.recordMemoryUsage();
+        await this.recordCpuUsage();
+      } catch (error) {
+        console.warn('System metrics collection failed:', error);
+      }
     }, 30000);
   }
 
@@ -406,6 +498,26 @@ export class PerformanceMonitoringService {
   clearMetrics(): void {
     this.metrics.clear();
   }
+
+  /**
+   * Cleanup resources (for testing)
+   */
+  async cleanup(): Promise<void> {
+    try {
+      this.clearMetrics();
+      this.alertStates.clear();
+
+      // Clear metrics collection interval
+      if (this.metricsCollectionInterval) {
+        clearInterval(this.metricsCollectionInterval);
+        this.metricsCollectionInterval = null;
+      }
+
+      await redis.disconnect();
+    } catch (error) {
+      console.warn('Performance monitoring cleanup failed:', error);
+    }
+  }
 }
 
 // Middleware to measure API response times
@@ -413,16 +525,26 @@ export function performanceMiddleware() {
   const monitor = PerformanceMonitoringService.getInstance();
 
   return async (req: any, res: any, next: any) => {
+    // Skip performance monitoring in test environment
+    if (process.env.NODE_ENV === 'test') {
+      return next();
+    }
+
     const start = performance.now();
 
     res.on('finish', async () => {
-      const duration = performance.now() - start;
-      await monitor.recordApiResponseTime(
-        req.route?.path || req.path,
-        req.method,
-        res.statusCode,
-        duration
-      );
+      try {
+        const duration = performance.now() - start;
+        await monitor.recordApiResponseTime(
+          req.route?.path || req.path,
+          req.method,
+          res.statusCode,
+          duration
+        );
+      } catch (error) {
+        // Silently handle performance monitoring errors
+        console.warn('Performance monitoring error:', error);
+      }
     });
 
     next();

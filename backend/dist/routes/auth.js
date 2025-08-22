@@ -1,0 +1,20 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const authController_1 = require("../controllers/authController");
+const auth_1 = require("../middlewares/auth");
+const validation_1 = require("../middlewares/validation");
+const security_1 = require("../middlewares/security");
+const auth_2 = require("../validation/auth");
+const router = (0, express_1.Router)();
+const authController = new authController_1.AuthController();
+router.post('/register', security_1.authRateLimit, (0, validation_1.validateBody)(auth_2.registerSchema), authController.register.bind(authController));
+router.post('/login', security_1.authRateLimit, (0, validation_1.validateBody)(auth_2.loginSchema), authController.login.bind(authController));
+router.post('/refresh-token', security_1.strictRateLimit, (0, validation_1.validateBody)(auth_2.refreshTokenSchema), authController.refreshToken.bind(authController));
+router.get('/me', auth_1.authenticateToken, authController.getCurrentUser.bind(authController));
+router.put('/profile', auth_1.authenticateToken, (0, validation_1.validateBody)(auth_2.updateUserProfileSchema), authController.updateProfile.bind(authController));
+router.put('/change-password', auth_1.authenticateToken, security_1.strictRateLimit, (0, validation_1.validateBody)(auth_2.changePasswordSchema), authController.changePassword.bind(authController));
+router.post('/logout', auth_1.authenticateToken, authController.logout.bind(authController));
+router.delete('/account', auth_1.authenticateToken, security_1.strictRateLimit, authController.deleteAccount.bind(authController));
+exports.default = router;
+//# sourceMappingURL=auth.js.map

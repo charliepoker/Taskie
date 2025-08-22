@@ -2,6 +2,11 @@ import { PrismaClient } from '@prisma/client';
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { TestDataFactory, createTestDataFactory } from './TestDataFactory';
+import {
+  TestDatabaseManager,
+  createTestDatabaseManager,
+} from './TestDatabaseManager';
 
 // Extend Request interface for authenticated requests
 interface AuthenticatedRequest extends Request {
@@ -23,7 +28,11 @@ export const testDb = new PrismaClient({
   },
 });
 
-// Mock user data generator
+// Test data factory and database manager instances
+export const testDataFactory = createTestDataFactory(testDb);
+export const testDatabaseManager = createTestDatabaseManager(testDb);
+
+// Legacy mock data generators (kept for backward compatibility)
 export const generateMockUserData = () => {
   const timestamp = Date.now();
   const random = Math.floor(Math.random() * 1000);
@@ -51,15 +60,10 @@ export const mockTaskData = {
   priority: 'MEDIUM' as const,
 };
 
-// Database cleanup utilities
+// Database cleanup utilities (updated to use TestDatabaseManager)
 export const cleanupDatabase = async () => {
   try {
-    // Delete in order to respect foreign key constraints
-    await testDb.comment.deleteMany();
-    await testDb.task.deleteMany();
-    await testDb.projectMember.deleteMany();
-    await testDb.project.deleteMany();
-    await testDb.user.deleteMany();
+    await testDatabaseManager.cleanupTestData();
   } catch (error) {
     console.log('Database cleanup error:', error);
   }
@@ -132,15 +136,13 @@ export const createMockResponse = (): Partial<Response> => {
   return res;
 };
 
-// Test setup and teardown
+// Test setup and teardown (updated to use TestDatabaseManager)
 export const setupTestDatabase = async () => {
-  await testDb.$connect();
-  await cleanupDatabase();
+  await testDatabaseManager.setupTestDatabase();
 };
 
 export const teardownTestDatabase = async () => {
-  await cleanupDatabase();
-  await testDb.$disconnect();
+  await testDatabaseManager.teardownTestDatabase();
 };
 
 // Authenticated request helper
