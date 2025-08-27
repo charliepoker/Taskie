@@ -61,3 +61,20 @@ variable "node_groups" {
     }
   }
 }
+variable "cluster_endpoint_public_access" {
+  description = "Enable public access to EKS cluster endpoint"
+  type        = bool
+  default     = true
+}
+
+variable "cluster_endpoint_private_access" {
+  description = "Enable private access to EKS cluster endpoint"
+  type        = bool
+  default     = true
+}
+
+variable "cluster_endpoint_public_access_cidrs" {
+  description = "List of CIDR blocks that can access the EKS cluster endpoint publicly"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
