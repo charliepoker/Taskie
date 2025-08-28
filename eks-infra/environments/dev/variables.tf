@@ -39,6 +39,12 @@ variable "private_subnet_cidrs" {
   default     = ["10.0.3.0/24", "10.0.4.0/24"]
 }
 
+variable "database_subnet_cidrs" {
+  description = "CIDR blocks for database subnets"
+  type        = list(string)
+  default     = ["10.0.5.0/24", "10.0.6.0/24"]
+}
+
 variable "kubernetes_version" {
   description = "Kubernetes version"
   type        = string
@@ -77,4 +83,16 @@ variable "cluster_endpoint_public_access_cidrs" {
   description = "List of CIDR blocks that can access the EKS cluster endpoint publicly"
   type        = list(string)
   default     = ["0.0.0.0/0"]
+}
+
+variable "db_username" {
+  description = "Username for PostgreSQL database"
+  type        = string
+  sensitive   = true
+}
+
+variable "db_password" {
+  description = "Password for PostgreSQL database"
+  type        = string
+  sensitive   = true
 }
