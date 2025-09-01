@@ -32,3 +32,18 @@ output "db_instance_port" {
   description = "The database port"
   value       = module.db.db_instance_port
 }
+
+output "redis_endpoint" {
+  description = "Redis primary endpoint"
+  value       = module.redis.replication_group_primary_endpoint_address
+}
+
+output "redis_port" {
+  description = "Redis port"
+  value       = module.redis.replication_group_port
+}
+
+output "redis_security_group_id" {
+  description = "Security group ID for Redis cluster"
+  value       = aws_security_group.redis.id
+}

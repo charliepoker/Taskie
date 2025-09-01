@@ -5,7 +5,7 @@ module "vpc" {
   name = "eks-vpc-${var.environment}"
   cidr = var.vpc_cidr
 
-  azs             = ["${var.aws_region}a", "${var.aws_region}b", ]
+  azs             = ["${var.aws_region}a", "${var.aws_region}b"]
   private_subnets = [var.private_subnet_cidrs[0], var.private_subnet_cidrs[1]]
   public_subnets  = [var.public_subnet_cidrs[0], var.public_subnet_cidrs[1]]
 
@@ -36,7 +36,7 @@ module "vpc" {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "19.16.0"
+  version = "19.21.0"
 
   cluster_name                         = var.cluster_name
   cluster_version                      = var.kubernetes_version
@@ -45,11 +45,10 @@ module "eks" {
   cluster_endpoint_public_access_cidrs = var.cluster_endpoint_public_access_cidrs
 
   # VPC Configuration
-  vpc_id                   = module.vpc.vpc_id
-  subnet_ids               = module.vpc.private_subnets
-  control_plane_subnet_ids = module.vpc.private_subnets
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.private_subnets
 
-  # EKS Managed Node Groups
+  # EKS Managed Node Groups (correct syntax for v19.x)
   eks_managed_node_groups = {
     main = {
       instance_types = var.node_groups["main"].instance_types
@@ -70,7 +69,7 @@ module "eks" {
     }
   }
 
-  # Enable EKS add-ons
+  # Enable cluster add-ons
   cluster_addons = {
     coredns = {
       most_recent = true
@@ -86,37 +85,6 @@ module "eks" {
   # Enable OIDC provider for the cluster
   enable_irsa = true
 
-  # Security group rules
-  cluster_security_group_additional_rules = {
-    egress_nodes_ephemeral_ports_tcp = {
-      description                = "To node 1025-65535"
-      protocol                   = "tcp"
-      from_port                  = 1025
-      to_port                    = 65535
-      type                       = "egress"
-      source_node_security_group = true
-    }
-  }
-
-  node_security_group_additional_rules = {
-    ingress_self_all = {
-      description = "Node to node all ports/protocols"
-      protocol    = "-1"
-      from_port   = 0
-      to_port     = 0
-      type        = "ingress"
-      self        = true
-    }
-    egress_all = {
-      description = "Node all egress"
-      protocol    = "-1"
-      from_port   = 0
-      to_port     = 0
-      type        = "egress"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
-  }
-
   tags = {
     Environment = var.environment
     Terraform   = "true"
@@ -130,16 +98,17 @@ module "db" {
   identifier = "taskie-${var.environment}-postgres"
 
   engine               = "postgres"
-  engine_version       = "17.4"
-  family               = "postgres17"
-  major_engine_version = "17"
+  engine_version       = "15.4"
+  family               = "postgres15"
+  major_engine_version = "15"
   instance_class       = "db.t3.medium"
 
   allocated_storage     = 20
   max_allocated_storage = 100
 
-  db_name  = "taskiedb"
+  db_name  = "taskietaskie"
   username = var.db_username
+  password = var.db_password
   port     = 5432
 
   multi_az               = false
@@ -187,6 +156,69 @@ resource "aws_security_group" "rds" {
     description     = "PostgreSQL access from EKS"
     from_port       = 5432
     to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [module.eks.node_security_group_id]
+  }
+
+  tags = {
+    Environment = var.environment
+    Terraform   = "true"
+    Project     = "taskie"
+  }
+}
+
+# Redis ElastiCache cluster using direct AWS resources
+resource "aws_elasticache_replication_group" "redis" {
+  replication_group_id = "taskie-${var.environment}-redis"
+  description          = "Redis cluster for Taskie ${var.environment}"
+
+  engine             = "redis"
+  engine_version     = "7.0"
+  port               = 6379
+  node_type          = "cache.t3.micro"
+  num_cache_clusters = 1
+
+  parameter_group_name = "default.redis7.x"
+
+  subnet_group_name  = aws_elasticache_subnet_group.redis.name
+  security_group_ids = [aws_security_group.redis.id]
+
+  snapshot_retention_limit = 7
+  snapshot_window          = "03:00-04:00"
+  maintenance_window       = "mon:04:00-mon:05:00"
+
+  automatic_failover_enabled = false
+  multi_az_enabled           = false
+
+  tags = {
+    Environment = var.environment
+    Terraform   = "true"
+    Project     = "taskie"
+  }
+}
+
+# Create subnet group for Redis
+resource "aws_elasticache_subnet_group" "redis" {
+  name       = "taskie-${var.environment}-redis-subnet-group"
+  subnet_ids = module.vpc.database_subnets
+
+  tags = {
+    Environment = var.environment
+    Terraform   = "true"
+    Project     = "taskie"
+  }
+}
+
+# Security group for Redis
+resource "aws_security_group" "redis" {
+  name_prefix = "taskie-${var.environment}-redis"
+  description = "Security group for Redis cluster"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    description     = "Redis access from EKS"
+    from_port       = 6379
+    to_port         = 6379
     protocol        = "tcp"
     security_groups = [module.eks.node_security_group_id]
   }

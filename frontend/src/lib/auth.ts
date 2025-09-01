@@ -13,9 +13,20 @@ interface ExtendedUser {
   refreshToken: string;
 }
 
-// Use localhost for both client-side and server-side in development
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+// Use different URLs for client-side vs server-side requests
+const getApiBaseUrl = () => {
+  if (typeof window === 'undefined') {
+    // Server-side (inside Docker)
+    return (process.env.BACKEND_URL || 'http://backend:5000') + '/api';
+  } else {
+    // Client-side
+    const publicUrl =
+      process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    return publicUrl.endsWith('/api') ? publicUrl : publicUrl + '/api';
+  }
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 async function refreshAccessToken(token: JWT) {
   try {
