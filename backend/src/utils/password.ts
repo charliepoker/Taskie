@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { AuthLogger } from './authLogger';
 
 // Salt rounds for bcrypt hashing
 const SALT_ROUNDS = 12;
@@ -6,12 +7,30 @@ const SALT_ROUNDS = 12;
 /**
  * Hash a plain text password
  */
-export async function hashPassword(password: string): Promise<string> {
+export async function hashPassword(
+  password: string,
+  requestId?: string
+): Promise<string> {
+  const startTime = Date.now();
+
   try {
     const salt = await bcrypt.genSalt(SALT_ROUNDS);
     const hashedPassword = await bcrypt.hash(password, salt);
+    const duration = Date.now() - startTime;
+
+    AuthLogger.logPasswordOperation('hash', true, duration, { requestId });
+
     return hashedPassword;
   } catch (error) {
+    const duration = Date.now() - startTime;
+    const errorMessage =
+      error instanceof Error ? error.message : 'Failed to hash password';
+
+    AuthLogger.logPasswordOperation('hash', false, duration, {
+      requestId,
+      errorMessage,
+    });
+
     throw new Error('Failed to hash password');
   }
 }
@@ -21,12 +40,28 @@ export async function hashPassword(password: string): Promise<string> {
  */
 export async function comparePassword(
   password: string,
-  hashedPassword: string
+  hashedPassword: string,
+  requestId?: string
 ): Promise<boolean> {
+  const startTime = Date.now();
+
   try {
     const isMatch = await bcrypt.compare(password, hashedPassword);
+    const duration = Date.now() - startTime;
+
+    AuthLogger.logPasswordOperation('compare', true, duration, { requestId });
+
     return isMatch;
   } catch (error) {
+    const duration = Date.now() - startTime;
+    const errorMessage =
+      error instanceof Error ? error.message : 'Failed to compare password';
+
+    AuthLogger.logPasswordOperation('compare', false, duration, {
+      requestId,
+      errorMessage,
+    });
+
     throw new Error('Failed to compare password');
   }
 }

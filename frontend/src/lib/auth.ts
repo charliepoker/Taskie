@@ -16,8 +16,8 @@ interface ExtendedUser {
 // Use different URLs for client-side vs server-side requests
 const getApiBaseUrl = () => {
   if (typeof window === 'undefined') {
-    // Server-side (inside Docker)
-    return (process.env.BACKEND_URL || 'http://backend:5000') + '/api';
+    // Server-side (inside Docker) - hardcode for now to test
+    return 'http://backend:5000/api';
   } else {
     // Client-side
     const publicUrl =
@@ -26,11 +26,10 @@ const getApiBaseUrl = () => {
   }
 };
 
-const API_BASE_URL = getApiBaseUrl();
-
 async function refreshAccessToken(token: JWT) {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+    const apiBaseUrl = getApiBaseUrl();
+    const response = await fetch(`${apiBaseUrl}/auth/refresh`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -71,11 +70,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          console.log('Missing credentials');
           return null;
         }
 
         try {
-          const response = await fetch(`${API_BASE_URL}/auth/login`, {
+          const isServerSide = typeof window === 'undefined';
+          const backendUrl = process.env.BACKEND_URL;
+          const publicUrl = process.env.NEXT_PUBLIC_API_URL;
+          console.log('Environment check:', {
+            isServerSide,
+            backendUrl,
+            publicUrl,
+          });
+
+          const apiBaseUrl = getApiBaseUrl();
+          console.log('Attempting login with API_BASE_URL:', apiBaseUrl);
+          const response = await fetch(`${apiBaseUrl}/auth/login`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -86,11 +97,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             }),
           });
 
+          console.log('Response status:', response.status);
+
           if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Login failed:', response.status, errorText);
             return null;
           }
 
           const data = await response.json();
+          console.log('Login response:', data.success ? 'Success' : 'Failed');
 
           if (data.success && data.data.user && data.data.tokens) {
             return {

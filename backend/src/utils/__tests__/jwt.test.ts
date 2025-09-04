@@ -8,6 +8,13 @@ import {
   JwtPayload,
 } from '../jwt';
 
+// Mock AuthLogger
+jest.mock('../authLogger', () => ({
+  AuthLogger: {
+    logTokenOperation: jest.fn(),
+  },
+}));
+
 // Mock environment variables
 const originalEnv = process.env;
 
