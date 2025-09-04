@@ -12,24 +12,113 @@ datasource db {
 
 // User model
 model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
-  username      String         @unique
-  firstName     String
-  lastName      String
-  password      String
-  avatar        String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  ownedProjects Project[]      @relation("ProjectOwner")
-  projects      ProjectMember[]
-  assignedTasks Task[]         @relation("TaskAssignee")
-  comments      Comment[]
+  id                   String               @id @default(uuid())
+  email                String               @unique
+  username             String               @unique
+  firstName            String
+  lastName             String
+  password             String
+  avatar               String?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  ownedProjects        Project[]            @relation("ProjectOwner")
+  projects             ProjectMember[]
+  assignedTasks        Task[]               @relation("TaskAssignee")
+  comments             Comment[]
+  passwordResetTokens  PasswordResetToken[]
 
   @@index([email])
   @@index([username])
   @@index([createdAt])
   @@map("users")
+}
+
+// Password Reset Token model
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
+}
+
+// Authentication Attempt model for monitoring
+model AuthAttempt {
+  id        String   @id @default(uuid())
+  email     String
+  ipAddress String
+  userAgent String
+  success   Boolean
+  errorCode String?
+  requestId String?
+  timestamp DateTime @default(now())
+
+  @@index([email])
+  @@index([ipAddress])
+  @@index([success])
+  @@index([timestamp])
+  @@index([email, timestamp])
+  @@index([ipAddress, timestamp])
+  @@map("auth_attempts")
+}
+
+// Suspicious Activity model for security monitoring
+model SuspiciousActivity {
+  id           String   @id @default(uuid())
+  type         String   // 'brute_force', 'credential_stuffing', 'unusual_location', 'rapid_attempts'
+  severity     String   // 'low', 'medium', 'high', 'critical'
+  description  String
+  ipAddress    String
+  email        String?
+  attemptCount Int
+  timeWindow   String
+  firstSeen    DateTime
+  lastSeen     DateTime
+  createdAt    DateTime @default(now())
+
+  @@index([ipAddress])
+  @@index([email])
+  @@index([type])
+  @@index([severity])
+  @@index([lastSeen])
+  @@index([ipAddress, lastSeen])
+  @@map("suspicious_activities")
+}
+
+// Blacklisted Token model for JWT security
+model BlacklistedToken {
+  id        String   @id @default(uuid())
+  tokenHash String   @unique
+  userId    String
+  tokenType String   // 'access' or 'refresh'
+  expiresAt DateTime
+  reason    String   // 'logout', 'password_change', 'security_breach', etc.
+  createdAt DateTime @default(now())
+
+  @@index([tokenHash])
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([tokenType])
+  @@map("blacklisted_tokens")
+}
+
+// Rate Limit Attempt model for enhanced rate limiting
+model RateLimitAttempt {
+  id        String   @id @default(uuid())
+  key       String   // Composite key like 'ip:192.168.1.1:/auth/login' or 'email:user@example.com:/auth/login'
+  timestamp DateTime @default(now())
+
+  @@index([key])
+  @@index([timestamp])
+  @@index([key, timestamp])
+  @@map("rate_limit_attempts")
 }
 
 // Project model

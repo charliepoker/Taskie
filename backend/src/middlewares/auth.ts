@@ -27,7 +27,7 @@ export async function authenticateToken(
     }
 
     // Verify the token
-    const decoded = verifyAccessToken(token);
+    const decoded = await verifyAccessToken(token);
 
     // Fetch the user from database to ensure they still exist
     const user = await prisma.user.findUnique({
@@ -97,7 +97,7 @@ export async function optionalAuth(
     }
 
     // Verify the token
-    const decoded = verifyAccessToken(token);
+    const decoded = await verifyAccessToken(token);
 
     // Fetch the user from database
     const user = await prisma.user.findUnique({
