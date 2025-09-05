@@ -3,7 +3,7 @@
 variable "state_bucket_name" {
   description = "Name of the S3 bucket for Terraform state storage"
   type        = string
-
+  default     = "taskie-eks-infra-state-bucket"
   validation {
     condition     = can(regex("^[a-z0-9][a-z0-9-]*[a-z0-9]$", var.state_bucket_name))
     error_message = "Bucket name must be lowercase, contain only letters, numbers, and hyphens, and not start or end with a hyphen."
@@ -18,7 +18,7 @@ variable "state_bucket_name" {
 variable "dynamodb_table_name" {
   description = "Name of the DynamoDB table for Terraform state locking"
   type        = string
-  default     = "terraform-state-locks"
+  default     = "taskie-eks-infra-state-locks"
 
   validation {
     condition     = can(regex("^[a-zA-Z0-9_.-]+$", var.dynamodb_table_name))

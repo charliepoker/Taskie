@@ -1,4 +1,3 @@
-
 terraform {
   required_version = ">= 1.5.0"
 
@@ -13,14 +12,14 @@ terraform {
     }
   }
 
-  # Remote state backend for production
-  backend "s3" {
-    bucket         = "taskie-eks-infra-state-bucket"
-    key            = "dev/terraform.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "taskie-eks-infra-state-locks"
-    encrypt        = true
-  }
+  # Remote state backend for production - temporarily disabled
+  # backend "s3" {
+  #   bucket         = "taskie-eks-infra-state-bucket"
+  #   key            = "prod/terraform.tfstate"
+  #   region         = "us-east-1"
+  #   dynamodb_table = "taskie-eks-infra-state-locks"
+  #   encrypt        = true
+  # }
 }
 
 provider "aws" {

@@ -35,12 +35,12 @@ output "db_instance_port" {
 
 output "redis_endpoint" {
   description = "Redis primary endpoint"
-  value       = module.redis.replication_group_primary_endpoint_address
+  value       = aws_elasticache_replication_group.redis.primary_endpoint_address
 }
 
 output "redis_port" {
   description = "Redis port"
-  value       = module.redis.replication_group_port
+  value       = aws_elasticache_replication_group.redis.port
 }
 
 output "redis_security_group_id" {

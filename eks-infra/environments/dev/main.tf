@@ -98,7 +98,7 @@ module "db" {
   identifier = "taskie-${var.environment}-postgres"
 
   engine               = "postgres"
-  engine_version       = "15.4"
+  engine_version       = "15.8"
   family               = "postgres15"
   major_engine_version = "15"
   instance_class       = "db.t3.medium"
@@ -178,7 +178,7 @@ resource "aws_elasticache_replication_group" "redis" {
   node_type          = "cache.t3.micro"
   num_cache_clusters = 1
 
-  parameter_group_name = "default.redis7.x"
+  parameter_group_name = "default.redis7"
 
   subnet_group_name  = aws_elasticache_subnet_group.redis.name
   security_group_ids = [aws_security_group.redis.id]
