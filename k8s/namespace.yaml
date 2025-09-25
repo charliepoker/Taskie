@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: taskie
+  labels:
+    app.kubernetes.io/name: taskie
+    app.kubernetes.io/component: namespace
+    app.kubernetes.io/part-of: taskie-application
+    app.kubernetes.io/managed-by: kubectl
+  annotations:
+    description: "Namespace for the Taskie task management application"

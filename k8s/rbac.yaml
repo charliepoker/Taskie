@@ -1,0 +1,130 @@
+---
+# Service Account for Taskie Application Components (Frontend, Backend)
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: taskie-sa
+  namespace: taskie
+  labels:
+    app.kubernetes.io/name: taskie
+    app.kubernetes.io/component: service-account
+    app.kubernetes.io/part-of: taskie-application
+    app.kubernetes.io/managed-by: kubectl
+  annotations:
+    description: "Service account for Taskie application components (frontend, backend)"
+automountServiceAccountToken: true
+
+---
+# Service Account for Database Components (PostgreSQL, Redis)
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: taskie-db-sa
+  namespace: taskie
+  labels:
+    app.kubernetes.io/name: taskie
+    app.kubernetes.io/component: service-account
+    app.kubernetes.io/part-of: taskie-application
+    app.kubernetes.io/managed-by: kubectl
+  annotations:
+    description: "Service account for Taskie database components with storage permissions"
+automountServiceAccountToken: true
+
+---
+# Role for Taskie Application Components (Frontend, Backend)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: taskie-app-role
+  namespace: taskie
+  labels:
+    app.kubernetes.io/name: taskie
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: taskie-application
+    app.kubernetes.io/managed-by: kubectl
+rules:
+  # Allow reading pods and services for service discovery
+  - apiGroups: [""]
+    resources: ["pods", "services", "endpoints"]
+    verbs: ["get", "list", "watch"]
+  # Allow reading configmaps and secrets for configuration
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch"]
+  # Allow creating events for logging and monitoring
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+
+---
+# Role for Database Components with additional storage permissions
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: taskie-db-role
+  namespace: taskie
+  labels:
+    app.kubernetes.io/name: taskie
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: taskie-application
+    app.kubernetes.io/managed-by: kubectl
+rules:
+  # Include all permissions from taskie-app-role
+  - apiGroups: [""]
+    resources: ["pods", "services", "endpoints"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+  # Additional permissions for persistent storage management
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch"]
+
+---
+# RoleBinding for Application Components
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: taskie-app-rolebinding
+  namespace: taskie
+  labels:
+    app.kubernetes.io/name: taskie
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: taskie-application
+    app.kubernetes.io/managed-by: kubectl
+subjects:
+  - kind: ServiceAccount
+    name: taskie-sa
+    namespace: taskie
+roleRef:
+  kind: Role
+  name: taskie-app-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# RoleBinding for Database Components
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: taskie-db-rolebinding
+  namespace: taskie
+  labels:
+    app.kubernetes.io/name: taskie
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: taskie-application
+    app.kubernetes.io/managed-by: kubectl
+subjects:
+  - kind: ServiceAccount
+    name: taskie-db-sa
+    namespace: taskie
+roleRef:
+  kind: Role
+  name: taskie-db-role
+  apiGroup: rbac.authorization.k8s.io
